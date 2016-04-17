@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import FileShare from './components/FileShare.js';
+import App from './components/App.js';
 
 class Main extends React.Component {
   constructor() {
@@ -12,7 +12,7 @@ class Main extends React.Component {
 
   render() {
     return (
-      <FileShare opts={this.options}/>
+      <App opts={this.options}/>
     );
   }
 }
