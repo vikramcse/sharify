@@ -1,13 +1,21 @@
 import React from 'react';
 import Peer from 'peerjs';
+import randomstring from 'randomstring';
+import File from './File';
 
 class Panel extends React.Component {
   constructor(props) {
     super(props);
 
     this.renderConnected = this.renderConnected.bind(this);
+    this.renderNotConnected = this.renderNotConnected.bind(this);
     this.handleTextChange = this.handleTextChange.bind(this);
     this.connect = this.connect.bind(this);
+    this.sendFile = this.sendFile.bind(this);
+    this.onReceiveData = this.onReceiveData.bind(this);
+    this.addFile = this.addFile.bind(this);
+    this.renderListFiles = this.renderListFiles.bind(this);
+    this.renderNoFiles = this.renderNoFiles.bind(this);
 
     this.state = {
       peer: new Peer({key: this.props.opts.peerjs_key}),
@@ -17,6 +25,20 @@ class Panel extends React.Component {
       files: []
     };
   }
+
+  renderNoFiles() {
+    return (
+      <span id="no_files_message">
+        No files shared to you yet
+      </span>
+		);
+  }
+
+  renderListFiles() {
+		return (
+      <File files={this.state.files}/>
+		);
+	}
 
   componentWillMount() {
     this.state.peer.on('open', function(id) {
@@ -40,24 +62,86 @@ class Panel extends React.Component {
       this.setState({
         conn: connection
       }, function() {
-        // open the connection and set state connected as true
-        this.state.peer.on('open', function() {
+        this.state.conn.on('open', function() {
           this.setState({
-            connected: true
-          });
+						connected: true
+					});
         }.bind(this));
 
+        this.state.conn.on('data', this.onReceiveData);
       });
     }.bind(this));
   }
 
+  componentWillUnmount(){
+		this.state.peer.destroy();
+	}
+
   renderConnected() {
     return (
       <div>
-        <input type="file" name="file" className="mui--hide" onChange={this.sendFile} />
-        <label htmlFor="file" className="mui-btn mui-btn--small mui-btn--primary mui-btn--fab">+</label>
+        <div>
+          <input type="file" name="file" id="file" className="mui--hide" onChange={this.sendFile} />
+          <label htmlFor="file" className="mui-btn mui-btn--small mui-btn--primary mui-btn--fab">+</label>
+        </div>
+        <div>
+          {this.state.files.length ? this.renderListFiles() : this.renderNoFiles()}
+        </div>
       </div>
     );
+  }
+
+  addFile(file) {
+    var file_name = file.name;
+    var file_url = file.url;
+
+    // If there are any files already in state
+    var files = this.state.files;
+    var file_id = randomstring.generate(5);
+
+    files.push({
+      id: file_id,
+      url: file_url,
+      name: file_name
+    });
+
+    this.setState({
+      files: files
+    });
+
+  }
+
+  sendFile(event) {
+    // grab the perticular file from event
+    var file = event.target.files[0];
+
+    // create a blob object
+    var blob = new Blob(event.target.files, {
+      type: file.type
+    });
+
+    this.state.conn.send({
+      file: blob,
+      filename: file.name,
+      filetype: file.type
+    });
+  }
+
+  onReceiveData(data) {
+    // time to decode the file
+    // when the data is recieved to the opponent it's not in blob format
+    // it's in json format, so we again have to convert in blob
+
+    var blob = new Blob([data.file], {
+      type: data.filetype
+    });
+
+    var url = URL.createObjectURL(blob);
+
+    this.addFile({
+      'name': data.filename,
+      'url': url
+    });
   }
 
   handleTextChange(event) {
@@ -81,6 +165,8 @@ class Panel extends React.Component {
         this.setState({
           connected: true
         });
+
+        this.state.conn.on('data', this.onReceiveData);
       }.bind(this));
     });
   }
@@ -88,8 +174,8 @@ class Panel extends React.Component {
   renderNotConnected() {
     return (
       <div>
-        <div className="mui-textfield" onChange={this.handleTextChange}>
-          <input type="text" className="mui-textfield"/>
+        <div className="mui-textfield">
+          <input type="text" className="mui-textfield" onChange={this.handleTextChange}/>
           <label>Opponent ID</label>
         </div>
         <button className="mui-btn mui-btn--accent" onClick={this.connect}>
@@ -107,8 +193,9 @@ class Panel extends React.Component {
         <div>
           <div className="mui-panel">
             <span>Your connection id is</span>
-            <strong className="mui--divider-left">&nbsp;{this.state.my_id}</strong>
+            <strong className="mui--divider-left">&nbsp; {this.state.my_id}</strong>
           </div>
+
           <div className="mui-panel">
             {this.state.connected ? this.renderConnected() : this.renderNotConnected()}
           </div>
@@ -125,6 +212,10 @@ class Panel extends React.Component {
       </div>
     );
   }
+}
+
+Panel.propTypes = {
+  opts: React.PropTypes.object
 }
 
 export default Panel;
