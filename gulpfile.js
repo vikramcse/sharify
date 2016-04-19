@@ -10,7 +10,11 @@ gulp.task('vendor', function() {
 });
 
 gulp.task('styles', function() {
-  return gulp.src(['public/css/*.css'])
+  return gulp.src([
+    'bower_components/toastr/toastr.min.css',
+    'bower_components/mui/packages/cdn/css/mui.min.css',
+    'app/css/app.css'
+  ])
     .pipe(concat('style.css'))
     .pipe(gulp.dest('build/css'));
 });
