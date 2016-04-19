@@ -4,6 +4,7 @@
   "description": "A peer to peer file sharing app in react.js",
   "main": "index.js",
   "scripts": {
+    "bundle": "gulp",
     "build": "browserify -t [ babelify --presets [ es2015 react ] ] app/main.js -o build/main.js",
     "watch": "watchify app/main.js -v -o build/main.js  -t [ babelify --presets [ es2015 react ] ]"
   },
@@ -20,5 +21,8 @@
     "react": "^15.0.1",
     "react-clipboard.js": "^0.1.7",
     "react-dom": "^15.0.1"
+  },
+  "devDependencies": {
+    "gulp-concat": "^2.6.0"
   }
 }
