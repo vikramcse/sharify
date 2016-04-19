@@ -2,6 +2,7 @@ import React from 'react';
 import Peer from 'peerjs';
 import randomstring from 'randomstring';
 import File from './File';
+import Copy from './Copy';
 
 class Panel extends React.Component {
   constructor(props) {
@@ -194,6 +195,7 @@ class Panel extends React.Component {
           <div className="mui-panel">
             <span>Your connection id is</span>
             <strong className="mui--divider-left">&nbsp; {this.state.my_id}</strong>
+            <Copy data={this.state.my_id}/>
           </div>
 
           <div className="mui-panel">
