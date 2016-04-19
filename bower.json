@@ -2,6 +2,7 @@
   "name": "sharify",
   "dependencies": {
     "jquery": "^2.1.4",
-    "toastr": "^2.1.1"
+    "toastr": "^2.1.1",
+    "mui": "^0.5.4"
   }
 }
